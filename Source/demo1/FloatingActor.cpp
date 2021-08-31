@@ -23,15 +23,9 @@ AFloatingActor::AFloatingActor()
 		//mesh->SetMaterial(0, MaterialAsset.Object);
 		mesh->SetRelativeLocation(FVector(0.f,0.f,0.f));
 	}
-	if(materoalPath.IsNull())
-	{
-		//FStreamableManager& mgr = Global::Ins()->GetStreamableManager();
-		//mgr.RequestAsyncLoad(this->materoalPath.ToStringReference(), FStreamableDelegate::CreateUObject(this, &AFloatingActor::GrantItemsDeferred));
-	}
-	else {
-		GrantItemsDeferred();
-	}
-
+	//auto path = materoalPath.ToString();
+	//UE_LOG(MyLog,Warning,TEXT("materoalPath.IsNull() %d %p %s"),materoalPath.IsNull(),materoalPath.Get(),*path);
+	OnChangeMaterial();
 }
 
 // Called when the game starts or when spawned
@@ -39,6 +33,18 @@ void AFloatingActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AFloatingActor::OnChangeMaterial()
+{
+	if (materoalPath.Get() == nullptr)
+	{
+		FStreamableManager& mgr = Global::Ins()->GetStreamableManager();
+		mgr.RequestAsyncLoad(this->materoalPath.ToStringReference(), FStreamableDelegate::CreateUObject(this, &AFloatingActor::GrantItemsDeferred));
+	}
+	else {
+		GrantItemsDeferred();
+	}
 }
 
 // Called every frame
@@ -56,20 +62,23 @@ void AFloatingActor::Tick(float DeltaTime)
 }
 
 
+void AFloatingActor::PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent)
+{
+    auto propertyName = PropertyChangedEvent.GetPropertyName();
+	if (propertyName == FName(TEXT("materoalPath")))
+	{
+		auto name = this->materoalPath.ToStringReference().GetAssetPathString();
+		UE_LOG(MyLog, Warning, TEXT("PostEditChangeProperty %s"), *name);
+		OnChangeMaterial();
+	}
+}
+
 void AFloatingActor::GrantItemsDeferred()
 {
 	UE_LOG(MyLog,Warning,TEXT("Load Success"));
 	auto material = materoalPath.Get();
-	if(materoalPath != NULL)
+	if(material != NULL)
 	{
-		auto slots = mesh->GetMaterialSlotNames();
-		UE_LOG(MyLog, Warning, TEXT("material slot count = %d"),slots.Num());
-		for(int i = 0;i < slots.Num();++i)
-		{
-			auto idx = mesh->GetMaterialIndex(slots[i]);
-			UE_LOG(MyLog, Warning, TEXT("material slot %d name = %d"), i,idx);
-		}
-
 		mesh->SetMaterial(0,material);
 	}
 	else {

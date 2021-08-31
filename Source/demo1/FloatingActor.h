@@ -25,14 +25,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FloatingActor")
 		TSoftObjectPtr<UMaterial> materoalPath = TSoftObjectPtr<UMaterial>(FSoftObjectPath(FName(TEXT("/Game/StarterContent/Materials/M_Tech_Hex_Tile.M_Tech_Hex_Tile"))));
 	
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
 	void GrantItemsDeferred();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* mesh;
 	std::shared_ptr<ConstructorHelpers::FObjectFinder<UStaticMesh>> static_mesh = nullptr;
+
+	void OnChangeMaterial();
 	
 public:	
 	// Called every frame
