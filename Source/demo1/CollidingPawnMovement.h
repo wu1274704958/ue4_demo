@@ -13,6 +13,9 @@ UCLASS()
 class DEMO1_API UCollidingPawnMovement : public UPawnMovementComponent
 {
 	GENERATED_BODY()
+	
+private:
 public:
+	void DrawRayLine(FVector start, FVector end, float leftTime = 0.0f, FLinearColor color = FLinearColor::Blue);
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 };

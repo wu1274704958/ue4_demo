@@ -2,6 +2,7 @@
 
 
 #include "CollidingPawnMovement.h"
+#include <Components/LineBatchComponent.h>
 
 void UCollidingPawnMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction * ThisTickFunction)
 {
@@ -23,7 +24,23 @@ void UCollidingPawnMovement::TickComponent(float DeltaTime, ELevelTick TickType,
 		// 若发生碰撞，尝试滑过去
 		if (Hit.IsValidBlockingHit())
 		{
+			auto start = GetActorLocation();
+			auto end = start + Hit.Normal * Hit.Distance ;
+			auto start2 = Hit.ImpactPoint;
+			auto end2 = start2 + Hit.ImpactNormal * 20.f;
+			DrawRayLine(start,end,1.f);
+			DrawRayLine(start2, end2, 1.f, FLinearColor(1.0f,0.0,0.0,1.0));
 			SlideAlongSurface(DesiredMovementThisFrame, 1.f - Hit.Time, Hit.Normal, Hit);
 		}
 	}
+}
+
+void UCollidingPawnMovement::DrawRayLine(FVector start,FVector end,float leftTime,FLinearColor color) 
+{
+	auto batcher = GetWorld()->PersistentLineBatcher;
+	if (batcher)
+	{
+		batcher->DrawLine(start,end,color,255,1.f,leftTime);
+	}
+
 }

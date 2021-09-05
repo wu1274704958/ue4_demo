@@ -5,8 +5,8 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/SphereComponent.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
+#include "Global.h"
+
 
 // Sets default values
 ACollidingPawn::ACollidingPawn()
@@ -30,15 +30,12 @@ ACollidingPawn::ACollidingPawn()
 		meshComp->SetRelativeScale3D(FVector(0.8f));
 	}
 
-	USpringArmComponent* springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
+	springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
 	springArm->SetupAttachment(RootComponent);
-	springArm->SetRelativeRotation(FRotator(-45.f,0.f,0.f));
-	springArm->TargetArmLength = 400.f;
+	springArm->SetRelativeRotation(FRotator(0.f,0.f,0.f));
+	springArm->TargetArmLength = 0.0;
 	springArm->bEnableCameraLag = true;
 	springArm->CameraLagSpeed = 3.0f;
-
-	auto camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	camera->SetupAttachment(springArm,USpringArmComponent::SocketName);
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
@@ -58,7 +55,20 @@ void ACollidingPawn::BeginPlay()
 void ACollidingPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (follow_camera)
+	{
+		auto pos = springArm->GetSocketLocation(USpringArmComponent::SocketName);
+		FTransform trans;
+		FVector rot(0.0,0.0,yaw);
+		FQuat quat = FQuat::MakeFromEuler(rot);
+		trans.SetRotation(quat);
+		auto tans_p = trans.TransformPosition(this->follow_offset);
+		//UE_LOG(MyLog,Warning,TEXT("%f %f %f"),pos.X,pos.Y,pos.Z);
+		rot.Y = follow_camera->GetActorRotation().Pitch;
+		quat = FQuat::MakeFromEuler(rot);
+		follow_camera->SetActorRotation(quat);
+		follow_camera->SetActorLocation(pos + tans_p);
+	}
 }
 
 // Called to bind functionality to input
@@ -77,27 +87,36 @@ UPawnMovementComponent * ACollidingPawn::GetMovementComponent() const
 
 void ACollidingPawn::moveForward(float v)
 {
-	if (pawnMovement && pawnMovement->UpdatedComponent == RootComponent)
+	/*if (pawnMovement && pawnMovement->UpdatedComponent == RootComponent)
 	{
 		pawnMovement->AddInputVector(GetActorForwardVector() * v);
+	}*/
+	if (follow_camera)
+	{
+		((USphereComponent*)RootComponent)->AddForce(follow_camera->GetActorForwardVector() * v * force_scale);
 	}
 }
 
 void ACollidingPawn::moveRight(float v)
 {
-	if (pawnMovement && pawnMovement->UpdatedComponent == RootComponent)
+	/*if (pawnMovement && pawnMovement->UpdatedComponent == RootComponent)
 	{
 		pawnMovement->AddInputVector(GetActorRightVector() * v);
+	}*/
+	if (follow_camera)
+	{
+		((USphereComponent*)RootComponent)->AddForce(follow_camera->GetActorRightVector() * v * force_scale);
 	}
 }
 
 void ACollidingPawn::turn(float v)
 {
-	if (pawnMovement && pawnMovement->UpdatedComponent == RootComponent)
+	/*if (pawnMovement && pawnMovement->UpdatedComponent == RootComponent)
 	{
 		auto rot = GetActorRotation();
 		rot.Yaw += v;
 		SetActorRotation(rot);
-	}
+	}*/
+	yaw += v;
 }
 
