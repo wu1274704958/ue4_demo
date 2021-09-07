@@ -24,19 +24,21 @@ ACollidingPawn::ACollidingPawn()
 	sphereComp->SetRelativeLocation(FVector::ZeroVector);
 	sphereComp->SetRelativeScale3D(FVector::OneVector);
 	sphereComp->SetRelativeRotation(FQuat::Identity);
-	sphereComp->InitSphereRadius(40.0f);
+	sphereComp->InitSphereRadius(50.0f);
 	sphereComp->SetCollisionProfileName(TEXT("Pawn"));
 	
 
 	auto meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	meshComp->SetupAttachment(sphereComp);
 	
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> mesh(TEXT("/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> mesh(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
 	if (mesh.Succeeded())
 	{
 		meshComp->SetStaticMesh(mesh.Object);
 		meshComp->SetRelativeLocation(FVector(0.f,0.f,0.f));
-		meshComp->SetRelativeScale3D(FVector(0.8f));
+		meshComp->SetRelativeScale3D(FVector(1.0f));
+		meshComp->SetSimulatePhysics(false);
+		meshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
 	springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
@@ -82,9 +84,10 @@ void ACollidingPawn::Tick(float DeltaTime)
 	if (DeformationVal != 0)
 	{
 		 float offset = static_cast<float>( DeformationVal) / 100.0f;
-		 auto scale = GetActorScale();
+		 auto scale = GetActorScaleEX();
 		 scale += FVector(offset);
-		 if (ToOne && (1.0f - scale.X) <= 0.01f)
+		 UE_LOG(MyLog,Warning,TEXT("ToOne %d,abs(1.0f - scale.X) = %f %f"),ToOne, abs(1.0f - scale.X),scale.X);
+		 if (ToOne && abs(1.0f - scale.X) <= 0.0001f)
 		 {
 			 ToOne = false;
 			 DeformationVal = 0;
@@ -159,7 +162,7 @@ void ACollidingPawn::turn(float v)
 
 void ACollidingPawn::jump()
 {
-	if (follow_camera && GetActorLocation().Z <= 40.0f)
+	if (follow_camera && GetActorLocation().Z <= 52.0f)
 	{	
 		energyStorage(DeformationMin);
 		//sphereComp->AddForce(FVector::UpVector * jump_force_scale);
@@ -168,27 +171,35 @@ void ACollidingPawn::jump()
 
 void ACollidingPawn::energyStorage(float to,float s)
 {
-	float z = GetActorScale3D().Z;
+	float z = GetActorScaleEX().Z;
 	DeformationVal = static_cast<float>(DeformationUnit) * (to > z ? 1.0f : -1.0f) * s;
 }
 
 float ACollidingPawn::isDeformation()
 {
-	return GetActorScale3D().Z - 1.0f;
+	return GetActorScaleEX().Z - 1.0f;
 }
 
 void ACollidingPawn::setWorldSpaceScale(FVector scale)
 {
 	auto meshComp = static_cast<UStaticMeshComponent*>(RootComponent->GetChildComponent(0));
-	SetActorScale3D(scale);
-	auto meshScale = FVector(0.8f, 0.8f, 0.8f) / scale;
-	meshComp->SetRelativeScale3D(meshScale);
+	//sphereComp->SetRelativeScale3D(scale);
+	//SetActorScale3D(scale);
+	scale_phy = scale.X;
+	sphereComp->SetSphereRadius(scale_phy * 50.0f);
+	//auto meshScale = FVector(0.8f, 0.8f, 0.8f) / scale;
+	//meshComp->SetRelativeScale3D(meshScale);
 
 	auto material = meshComp->GetMaterial(0);
 	if (material)
 	{
 		if(!materialInterface)
 			materialInterface = meshComp->CreateDynamicMaterialInstance(0, material);
-		materialInterface->SetVectorParameterValue(FName(TEXT("WS_Scale")),FLinearColor(0.0,0.0,-20.0 * ((1.0 - scale.X)* 0.5)));
+		materialInterface->SetVectorParameterValue(FName(TEXT("WS_Scale")),FLinearColor(0.0,0.0,-50.0 * ((1.0 - scale.X)* 0.5)));
 	}
+}
+
+FVector ACollidingPawn::GetActorScaleEX()
+{
+	return FVector(scale_phy);
 }

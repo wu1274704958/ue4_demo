@@ -2,4 +2,5 @@
 /Intermediate/**
 /DerivedDataCache/**
 /Binaries/**
-
+/Saved/Logs/**
+/Saved/Config/CrashReportClient/**

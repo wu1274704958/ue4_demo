@@ -36,7 +36,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	int DeformationUnit = 1;
 	int DeformationVal = 0;
-	
+	UPROPERTY(EditAnywhere)
+		USphereComponent* sphereComp;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -44,9 +45,9 @@ protected:
 
 	UCollidingPawnMovement* pawnMovement = nullptr;
 	USpringArmComponent* springArm;
-	USphereComponent* sphereComp;
 	UMaterialInstanceDynamic* materialInterface;
 	float yaw = 0.f;
+	float scale_phy = 1.0f;
 
 	bool ToOne = false;
 
@@ -66,4 +67,5 @@ public:
 	void setWorldSpaceScale(FVector scale);
 	void energyStorage(float to,float s = 1.0f);
 	float isDeformation();
+	FVector GetActorScaleEX();
 };
