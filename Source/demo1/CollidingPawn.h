@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include <Camera/CameraActor.h>
+#include "Components/SphereComponent.h"
 #include "CollidingPawn.generated.h"
 
 
@@ -26,6 +27,16 @@ public:
 	FVector follow_offset;
 	UPROPERTY(EditAnyWhere)
 	float force_scale= 1.0f;
+	UPROPERTY(EditAnywhere)
+	float jump_force_scale = 1.0f;
+	UPROPERTY(EditAnyWhere)
+	float DeformationMin = 0.8f;
+	UPROPERTY(EditAnywhere)
+	float DeformationMax = 1.1f;
+	UPROPERTY(EditAnywhere)
+	int DeformationUnit = 1;
+	int DeformationVal = 0;
+	
 	
 protected:
 	// Called when the game starts or when spawned
@@ -33,8 +44,11 @@ protected:
 
 	UCollidingPawnMovement* pawnMovement = nullptr;
 	USpringArmComponent* springArm;
-
+	USphereComponent* sphereComp;
+	UMaterialInstanceDynamic* materialInterface;
 	float yaw = 0.f;
+
+	bool ToOne = false;
 
 public:	
 	// Called every frame
@@ -48,5 +62,8 @@ public:
 	void moveForward(float v);
 	void moveRight(float v);
 	void turn(float v);
-
+	void jump();
+	void setWorldSpaceScale(FVector scale);
+	void energyStorage(float to,float s = 1.0f);
+	float isDeformation();
 };
