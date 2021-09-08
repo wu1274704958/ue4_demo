@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include <Camera/CameraActor.h>
 #include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "CollidingPawn.generated.h"
 
 
@@ -24,20 +25,20 @@ public:
 	UPROPERTY(EditAnyWhere)
 	ACameraActor* follow_camera = nullptr;
 	UPROPERTY(EditAnyWhere)
-	FVector follow_offset;
+	FVector follow_offset = FVector(-179.04f,0.0f,79.1695f);
 	UPROPERTY(EditAnyWhere)
-	float force_scale= 1.0f;
+	float force_scale= 30000.0f;
 	UPROPERTY(EditAnywhere)
-	float jump_force_scale = 1.0f;
+	float jump_force_scale = 9000000.0f;
 	UPROPERTY(EditAnyWhere)
-	float DeformationMin = 0.8f;
+	float DeformationMin = 0.6f;
 	UPROPERTY(EditAnywhere)
 	float DeformationMax = 1.1f;
 	UPROPERTY(EditAnywhere)
 	int DeformationUnit = 1;
 	int DeformationVal = 0;
 	UPROPERTY(EditAnywhere)
-		USphereComponent* sphereComp;
+	UCapsuleComponent* sphereComp;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -67,5 +68,6 @@ public:
 	void setWorldSpaceScale(FVector scale);
 	void energyStorage(float to,float s = 1.0f);
 	float isDeformation();
+	bool rayCastFloor(float offset = 1.0f);
 	FVector GetActorScaleEX();
 };

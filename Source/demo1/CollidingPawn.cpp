@@ -4,7 +4,8 @@
 #include "CollidingPawn.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
-
+#include "Engine/EngineTypes.h"
+#include <Components/LineBatchComponent.h>
 #include "Global.h"
 
 
@@ -18,23 +19,25 @@ ACollidingPawn::ACollidingPawn()
 	//RootComponent = root;
 	
 
-	sphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
+	sphereComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RootComponent"));
 	RootComponent = sphereComp;
 	//sphereComp->SetupAttachment(RootComponent);
 	sphereComp->SetRelativeLocation(FVector::ZeroVector);
 	sphereComp->SetRelativeScale3D(FVector::OneVector);
-	sphereComp->SetRelativeRotation(FQuat::Identity);
-	sphereComp->InitSphereRadius(50.0f);
+	sphereComp->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0.0f,90.0f,0.0f)));
+	sphereComp->InitCapsuleSize(50.0f,50.0f);
 	sphereComp->SetCollisionProfileName(TEXT("Pawn"));
-	
+	sphereComp->SetSimulatePhysics(true);
+	sphereComp->SetEnableGravity(true);
 
 	auto meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	meshComp->SetupAttachment(sphereComp);
-	
+	static ConstructorHelpers::FObjectFinder<UMaterial> material(TEXT("/Game/StarterContent/Materials/M_Tech_Hex_Tile_2.M_Tech_Hex_Tile_2"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> mesh(TEXT("/Engine/BasicShapes/Sphere.Sphere"));
 	if (mesh.Succeeded())
 	{
 		meshComp->SetStaticMesh(mesh.Object);
+		meshComp->SetMaterial(0,material.Object);
 		meshComp->SetRelativeLocation(FVector(0.f,0.f,0.f));
 		meshComp->SetRelativeScale3D(FVector(1.0f));
 		meshComp->SetSimulatePhysics(false);
@@ -131,7 +134,7 @@ void ACollidingPawn::moveForward(float v)
 	{
 		pawnMovement->AddInputVector(GetActorForwardVector() * v);
 	}*/
-	if (follow_camera)
+	if (follow_camera && rayCastFloor())
 	{
 		sphereComp->AddForce(follow_camera->GetActorForwardVector() * v * force_scale);
 	}
@@ -143,7 +146,7 @@ void ACollidingPawn::moveRight(float v)
 	{
 		pawnMovement->AddInputVector(GetActorRightVector() * v);
 	}*/
-	if (follow_camera)
+	if (follow_camera && rayCastFloor())
 	{
 		sphereComp->AddForce(follow_camera->GetActorRightVector() * v * force_scale);
 	}
@@ -162,7 +165,7 @@ void ACollidingPawn::turn(float v)
 
 void ACollidingPawn::jump()
 {
-	if (follow_camera && GetActorLocation().Z <= 52.0f)
+	if (follow_camera && rayCastFloor())
 	{	
 		energyStorage(DeformationMin);
 		//sphereComp->AddForce(FVector::UpVector * jump_force_scale);
@@ -180,13 +183,29 @@ float ACollidingPawn::isDeformation()
 	return GetActorScaleEX().Z - 1.0f;
 }
 
+bool ACollidingPawn::rayCastFloor(float offset)
+{
+	auto start = GetActorLocation() + FVector::DownVector * 50.0f;
+	auto end = start + FVector::DownVector * offset;
+	/*auto batcher = GetWorld()->PersistentLineBatcher;
+	if (batcher)
+	{
+		batcher->DrawLine(start, end, FLinearColor::White, 255, 1.5f);
+	}*/
+	FCollisionQueryParams queryParam;
+	queryParam.AddIgnoredActor(this);
+	auto shape = FCollisionShape::MakeSphere(50.0f);
+	return GetWorld()->SweepTestByChannel(start,end,FQuat::Identity,ECC_WorldDynamic,shape,queryParam) ||
+	GetWorld()->SweepTestByChannel(start, end,FQuat::Identity, ECC_WorldDynamic,shape, queryParam);
+}
+
 void ACollidingPawn::setWorldSpaceScale(FVector scale)
 {
 	auto meshComp = static_cast<UStaticMeshComponent*>(RootComponent->GetChildComponent(0));
 	//sphereComp->SetRelativeScale3D(scale);
 	//SetActorScale3D(scale);
 	scale_phy = scale.X;
-	sphereComp->SetSphereRadius(scale_phy * 50.0f);
+	sphereComp->SetCapsuleSize(scale_phy * 50.0f, 50.0f);
 	//auto meshScale = FVector(0.8f, 0.8f, 0.8f) / scale;
 	//meshComp->SetRelativeScale3D(meshScale);
 
