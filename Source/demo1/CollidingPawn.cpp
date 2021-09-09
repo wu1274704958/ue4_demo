@@ -88,9 +88,9 @@ void ACollidingPawn::Tick(float DeltaTime)
 	{
 		 float offset = static_cast<float>( DeformationVal) / 100.0f;
 		 auto scale = GetActorScaleEX();
-		 scale += FVector(offset);
-		 UE_LOG(MyLog,Warning,TEXT("ToOne %d,abs(1.0f - scale.X) = %f %f"),ToOne, abs(1.0f - scale.X),scale.X);
-		 if (ToOne && abs(1.0f - scale.X) <= 0.0001f)
+		 scale += FVector(offset) * DeltaTime;
+		 //UE_LOG(MyLog,Warning,TEXT("ToOne %d,abs(1.0f - scale.X) = %f %f"),ToOne, abs(1.0f - scale.X),scale.X);
+		 if (ToOne && abs(1.0f - scale.X) <= 0.01f)
 		 {
 			 ToOne = false;
 			 DeformationVal = 0;
@@ -106,7 +106,7 @@ void ACollidingPawn::Tick(float DeltaTime)
 		 if (scale.Z >= DeformationMax)
 		 {
 			 setWorldSpaceScale(FVector(DeformationMax - static_cast<float>(1) / 100.0f));
-			 DeformationVal = -1;
+			 energyStorage(1.0f);
 			 ToOne = true;
 		 }
 		 
@@ -165,7 +165,8 @@ void ACollidingPawn::turn(float v)
 
 void ACollidingPawn::jump()
 {
-	if (follow_camera && rayCastFloor())
+	UE_LOG(MyLog,Warning,TEXT("abs(scale - 1.0f) %f %d"),abs(isDeformation()),ToOne);
+	if (follow_camera && rayCastFloor() && abs(isDeformation()) <= 0.01f)
 	{	
 		energyStorage(DeformationMin);
 		//sphereComp->AddForce(FVector::UpVector * jump_force_scale);
