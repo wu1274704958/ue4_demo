@@ -52,7 +52,7 @@ ACollidingPawn::ACollidingPawn()
 	springArm->bEnableCameraLag = true;
 	springArm->CameraLagSpeed = 3.0f;
 
-	AutoPossessPlayer = EAutoReceiveInput::Player1;
+	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
 	pawnMovement = CreateDefaultSubobject< UCollidingPawnMovement>(TEXT("Movement"));
 	pawnMovement->UpdatedComponent = RootComponent;
@@ -76,36 +76,44 @@ void ACollidingPawn::Tick(float DeltaTime)
 		FTransform trans;
 		FVector rot = follow_camera->GetActorRotation().Euler();
 		rot.Z = yaw;
-		FQuat quat = FQuat::MakeFromEuler(FVector(0.0,0.0,yaw));
-		trans.SetRotation(quat);
-		auto tans_p = trans.TransformPosition(this->follow_offset);
+		
 		//UE_LOG(MyLog,Warning,TEXT("%f %f %f"),pos.X,pos.Y,pos.Z);
 
 		auto c_direct = follow_camera->GetActorForwardVector().GetUnsafeNormal();
-		c_direct.Y = 0.0f;
 		auto b_direct = (GetActorLocation() - follow_camera->GetActorLocation()).GetUnsafeNormal();
-		b_direct.Y = 0.0f;
+					
+		float z_rot = FMath::RadiansToDegrees( FQuat::MakeFromEuler(FVector(c_direct.X, c_direct.Y,0.0f)).AngularDistance(FQuat::MakeFromEuler( FVector(b_direct.X,b_direct.Y,0.0f))));
+
+		trans.SetRotation(FQuat::MakeFromEuler(FVector(0.0f,0.0f,-z_rot)));
+		b_direct = trans.TransformVector(b_direct);
+
+		UE_LOG(MyLog, Warning, TEXT("z_rot %f"), z_rot);
 		UE_LOG(MyLog, Warning, TEXT("c_direct %f %f %f"), c_direct.X, c_direct.Y, c_direct.Z);
 		UE_LOG(MyLog, Warning, TEXT("b_direct %f %f %f"), b_direct.X, b_direct.Y, b_direct.Z);
+
 		float rad = FMath::RadiansToDegrees(acos(FVector::DotProduct(c_direct, b_direct)));
 
-		/*auto batcher = GetWorld()->PersistentLineBatcher;
+		auto batcher = GetWorld()->PersistentLineBatcher;
 		if (batcher)
 		{
 			auto b = follow_camera->GetActorLocation();
-			auto e = b * follow_camera->GetActorForwardVector() * 10.0;
+			auto e = b * c_direct * 10.0;
 			batcher->DrawLine(b, e , FLinearColor::White, 255, 1.0f,0.01f);
-			batcher->DrawLine(b,b * direct * 10.0, FLinearColor::Green, 255, 1.0f,0.01f);
-		}*/
+			batcher->DrawLine(b,b * b_direct * 10.0, FLinearColor::Green, 255, 1.0f,0.01f);
+		}
 
 		
 		UE_LOG(MyLog, Warning, TEXT("RadiansToDegrees %f %f %f"), rad,rot.Y,follow_camera->GetActorRotation().Pitch);
 		
-		//rot.Y += rad;
+		//rot.Y -= rad;
+		trans = FTransform();
+		FQuat quat = FQuat::MakeFromEuler(rot);
+		trans.SetRotation(quat);
+		auto tans_p = trans.TransformPosition(this->follow_offset);
 		//rot.Y = rad;
 		quat = FQuat::MakeFromEuler(rot);
 		follow_camera->SetActorRotation(quat);
-		follow_camera->SetActorLocation(pos + tans_p);
+		//follow_camera->SetActorLocation(pos + tans_p);
 	}
 
 	if (DeformationVal != 0)
