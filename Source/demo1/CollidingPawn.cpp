@@ -261,3 +261,11 @@ FVector ACollidingPawn::GetActorScaleEX()
 {
 	return FVector(scale_phy);
 }
+
+static float CalcDegress(FVector a, FVector b)
+{
+	float deg = FMath::RadiansToDegrees( FMath::Acos( FVector::DotProduct( a.GetSafeNormal(),b.GetSafeNormal() )));
+
+	FVector::CrossProduct(a,b);
+
+}
