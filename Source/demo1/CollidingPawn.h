@@ -39,6 +39,13 @@ public:
 	int DeformationVal = 0;
 	UPROPERTY(EditAnywhere)
 	UCapsuleComponent* sphereComp;
+	UPROPERTY(EditAnywhere)
+	AActor* BorthPoint;
+	UPROPERTY(EditAnywhere)
+	float DeadDeep = -1000.0f;
+
+	UPROPERTY(EditAnywhere)
+	float cameraPitchOff = 0.0f;
 	
 protected:
 	// Called when the game starts or when spawned
