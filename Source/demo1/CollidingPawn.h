@@ -10,6 +10,7 @@
 #include <Camera/CameraActor.h>
 #include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
+#include <tuple>
 #include "CollidingPawn.generated.h"
 
 
@@ -77,4 +78,6 @@ public:
 	float isDeformation();
 	bool rayCastFloor(float offset = 1.0f);
 	FVector GetActorScaleEX();
+	float GetCameraPitch();
+	std::tuple<float,FVector> CalcDegress(FVector a, FVector b);
 };

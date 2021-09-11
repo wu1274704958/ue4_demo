@@ -9,7 +9,6 @@
 #include "GameFramework/PhysicsVolume.h"
 #include "Global.h"
 
-
 // Sets default values
 ACollidingPawn::ACollidingPawn()
 {
@@ -50,7 +49,7 @@ ACollidingPawn::ACollidingPawn()
 	springArm->SetRelativeRotation(FRotator(0.f,0.f,0.f));
 	springArm->TargetArmLength = 0.0;
 	springArm->bEnableCameraLag = true;
-	springArm->CameraLagSpeed = 3.0f;
+	springArm->CameraLagSpeed = 0.5f;
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
@@ -76,44 +75,29 @@ void ACollidingPawn::Tick(float DeltaTime)
 		FTransform trans;
 		FVector rot = follow_camera->GetActorRotation().Euler();
 		rot.Z = yaw;
-		
-		//UE_LOG(MyLog,Warning,TEXT("%f %f %f"),pos.X,pos.Y,pos.Z);
 
-		auto c_direct = follow_camera->GetActorForwardVector().GetUnsafeNormal();
-		auto b_direct = (GetActorLocation() - follow_camera->GetActorLocation()).GetUnsafeNormal();
-					
-		float z_rot = FMath::RadiansToDegrees( FQuat::MakeFromEuler(FVector(c_direct.X, c_direct.Y,0.0f)).AngularDistance(FQuat::MakeFromEuler( FVector(b_direct.X,b_direct.Y,0.0f))));
+		auto len = follow_offset.Size();
 
-		trans.SetRotation(FQuat::MakeFromEuler(FVector(0.0f,0.0f,-z_rot)));
-		b_direct = trans.TransformVector(b_direct);
-
-		UE_LOG(MyLog, Warning, TEXT("z_rot %f"), z_rot);
-		UE_LOG(MyLog, Warning, TEXT("c_direct %f %f %f"), c_direct.X, c_direct.Y, c_direct.Z);
-		UE_LOG(MyLog, Warning, TEXT("b_direct %f %f %f"), b_direct.X, b_direct.Y, b_direct.Z);
-
-		float rad = FMath::RadiansToDegrees(acos(FVector::DotProduct(c_direct, b_direct)));
-
-		auto batcher = GetWorld()->PersistentLineBatcher;
-		if (batcher)
-		{
-			auto b = follow_camera->GetActorLocation();
-			auto e = b * c_direct * 10.0;
-			batcher->DrawLine(b, e , FLinearColor::White, 255, 1.0f,0.01f);
-			batcher->DrawLine(b,b * b_direct * 10.0, FLinearColor::Green, 255, 1.0f,0.01f);
-		}
+		auto rad = GetCameraPitch();
 
 		
-		UE_LOG(MyLog, Warning, TEXT("RadiansToDegrees %f %f %f"), rad,rot.Y,follow_camera->GetActorRotation().Pitch);
-		
-		//rot.Y -= rad;
-		trans = FTransform();
-		FQuat quat = FQuat::MakeFromEuler(rot);
-		trans.SetRotation(quat);
+
+		trans.SetRotation(FQuat::MakeFromEuler(rot));
 		auto tans_p = trans.TransformPosition(this->follow_offset);
-		//rot.Y = rad;
-		quat = FQuat::MakeFromEuler(rot);
+
+		auto b_direct = FVector::Distance(pos,follow_camera->GetActorLocation());
+		auto max_dist = len * 1.2f;
+		auto a = FMath::Clamp(b_direct,len,max_dist) / max_dist;
+		UE_LOG(MyLog, Warning, TEXT("%f %f %f %f"), rad,a,b_direct,max_dist);
+		rot.Y = rad * a;// * cameraPitchOff * DeltaTime;
+		auto min = 78.f;
+		if(rot.Y > min) rot.Y = min - 0.1f;
+		if (rot.Y < -min) rot.Y = -min + 0.1f;
+
+		auto quat = FQuat::MakeFromEuler(rot); //* cameraPitchOff * DeltaTime;
+
 		follow_camera->SetActorRotation(quat);
-		//follow_camera->SetActorLocation(pos + tans_p);
+		follow_camera->SetActorLocation(pos + tans_p);
 	}
 
 	if (DeformationVal != 0)
@@ -146,7 +130,8 @@ void ACollidingPawn::Tick(float DeltaTime)
 	{
 		if(BorthPoint){
 			SetActorLocation(BorthPoint->GetActorLocation());
-			sphereComp->GetPhysicsVolume()->Reset();
+			sphereComp->SetSimulatePhysics(false);
+			sphereComp->SetSimulatePhysics(true);
 		}
 	}
 }
@@ -262,10 +247,39 @@ FVector ACollidingPawn::GetActorScaleEX()
 	return FVector(scale_phy);
 }
 
-static float CalcDegress(FVector a, FVector b)
+float ACollidingPawn::GetCameraPitch()
 {
-	float deg = FMath::RadiansToDegrees( FMath::Acos( FVector::DotProduct( a.GetSafeNormal(),b.GetSafeNormal() )));
+	auto cam_pos = follow_camera->GetActorLocation();
+	auto pos = springArm->GetSocketLocation(USpringArmComponent::SocketName);
 
-	FVector::CrossProduct(a,b);
+	//UE_LOG(MyLog, Warning, TEXT("%f %f %f"), pos.X, pos.Y, pos.Z);
+	//UE_LOG(MyLog, Warning, TEXT("%f %f %f"), cam_pos.X, cam_pos.Y, cam_pos.Z);
 
+	auto c_direct = follow_camera->GetActorForwardVector().GetSafeNormal();
+	auto b_direct = (pos - cam_pos).GetSafeNormal();
+
+	auto rot = b_direct.Rotation();
+
+	//UE_LOG(MyLog, Warning, TEXT("b_direct %f %f %f"), rot.Roll, rot.Pitch, rot.Yaw);
+
+	return rot.Pitch;
+}
+
+std::tuple<float,FVector> ACollidingPawn::CalcDegress(FVector a, FVector b)
+{
+	float rad =  FMath::Acos( FVector::DotProduct( a,b ));
+	auto rot_axis =  FVector::CrossProduct(-a,b).GetSafeNormal();
+
+	//auto start = GetActorLocation();
+	//auto batcher = GetWorld()->LineBatcher;
+
+	//batcher->DrawLine(start, start + (a * 10.0), FLinearColor::White, 255, 1.0f, 1.01f);
+	//batcher->DrawLine(start, start + (b * 10.0), FLinearColor::Blue, 255, 1.0f, 1.01f);
+	//auto c = quat.RotateVector(a).GetSafeNormal();
+	//batcher->DrawLine(start, start + (c * 10.0), FLinearColor::Green, 255, 1.0f, 1.01f);
+	//batcher->DrawLine(start, start + (rot_axis * 10.0), FLinearColor::Red, 255, 1.0f, 1.01f);
+	
+	//UE_LOG(MyLog,Warning,TEXT("CalcDegress c¡¤b = %f"), FVector::DotProduct(c, b));
+	
+	return std::make_tuple(FMath::RadiansToDegrees(rad),rot_axis);
 }
