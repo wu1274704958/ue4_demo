@@ -47,13 +47,15 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	float cameraPitchOff = 0.0f;
+	UPROPERTY(EditAnywhere)
+	USpringArmComponent* springArm;
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UCollidingPawnMovement* pawnMovement = nullptr;
-	USpringArmComponent* springArm;
+	
 	UMaterialInstanceDynamic* materialInterface;
 	float yaw = 0.f;
 	float scale_phy = 1.0f;

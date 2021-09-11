@@ -24,7 +24,7 @@ ACollidingPawn::ACollidingPawn()
 	//sphereComp->SetupAttachment(RootComponent);
 	sphereComp->SetRelativeLocation(FVector::ZeroVector);
 	sphereComp->SetRelativeScale3D(FVector::OneVector);
-	sphereComp->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0.0f,90.0f,0.0f)));
+	sphereComp->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0.0f,0.0f,0.0f)));
 	sphereComp->InitCapsuleSize(50.0f,50.0f);
 	sphereComp->SetCollisionProfileName(TEXT("Pawn"));
 	sphereComp->SetSimulatePhysics(true);
@@ -49,7 +49,7 @@ ACollidingPawn::ACollidingPawn()
 	springArm->SetRelativeRotation(FRotator(0.f,0.f,0.f));
 	springArm->TargetArmLength = 0.0;
 	springArm->bEnableCameraLag = true;
-	springArm->CameraLagSpeed = 0.5f;
+	springArm->CameraLagSpeed = 3.5f;
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
