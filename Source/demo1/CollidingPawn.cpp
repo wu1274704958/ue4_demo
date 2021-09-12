@@ -89,7 +89,11 @@ void ACollidingPawn::Tick(float DeltaTime)
 		auto max_dist = len * 1.2f;
 		auto a = FMath::Clamp(b_direct,len,max_dist) / max_dist;
 		UE_LOG(MyLog, Warning, TEXT("%f %f %f %f"), rad,a,b_direct,max_dist);
-		rot.Y = rad * a;// * cameraPitchOff * DeltaTime;
+		
+		auto new_rot_y = rad * a;
+		auto zl = new_rot_y - rot.Y;
+		rot.Y += zl * (FMath::Abs( zl ) > 1.f ? (1.f / FMath::Abs(zl)) : 1.0f);
+		
 		auto min = 78.f;
 		if(rot.Y > min) rot.Y = min - 0.1f;
 		if (rot.Y < -min) rot.Y = -min + 0.1f;
