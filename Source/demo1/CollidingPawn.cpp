@@ -88,7 +88,7 @@ void ACollidingPawn::Tick(float DeltaTime)
 		auto b_direct = FVector::Distance(pos,follow_camera->GetActorLocation());
 		auto max_dist = len * 1.2f;
 		auto a = FMath::Clamp(b_direct,len,max_dist) / max_dist;
-		UE_LOG(MyLog, Warning, TEXT("%f %f %f %f"), rad,a,b_direct,max_dist);
+		//UE_LOG(MyLog, Warning, TEXT("%f %f %f %f"), rad,a,b_direct,max_dist);
 		
 		auto new_rot_y = rad * a;
 		auto zl = new_rot_y - rot.Y;
@@ -121,7 +121,7 @@ void ACollidingPawn::Tick(float DeltaTime)
 		 {
 			 setWorldSpaceScale(FVector(DeformationMin + static_cast<float>(1) / 100.0f));
 			 energyStorage(DeformationMax);
-			 sphereComp->AddForce(FVector::UpVector * jump_force_scale);
+			 sphereComp->AddForce(FVector::UpVector * jump_force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
 		 }else
 		 if (scale.Z >= DeformationMax)
 		 {
@@ -163,7 +163,7 @@ void ACollidingPawn::moveForward(float v)
 	}*/
 	if (follow_camera && rayCastFloor())
 	{
-		sphereComp->AddForce(follow_camera->GetActorForwardVector() * v * force_scale);
+		sphereComp->AddForce(follow_camera->GetActorForwardVector() * v * force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
 	}
 }
 
@@ -175,7 +175,7 @@ void ACollidingPawn::moveRight(float v)
 	}*/
 	if (follow_camera && rayCastFloor())
 	{
-		sphereComp->AddForce(follow_camera->GetActorRightVector() * v * force_scale);
+		sphereComp->AddForce(follow_camera->GetActorRightVector() * v * force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
 	}
 }
 
