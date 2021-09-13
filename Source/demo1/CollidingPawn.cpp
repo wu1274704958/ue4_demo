@@ -115,19 +115,20 @@ void ACollidingPawn::Tick(float DeltaTime)
 			 ToOne = false;
 			 DeformationVal = 0;
 			 setWorldSpaceScale(FVector::OneVector);
-		 }
-		 setWorldSpaceScale(scale);
-		 if (scale.Z <= DeformationMin)
-		 {
-			 setWorldSpaceScale(FVector(DeformationMin + static_cast<float>(1) / 100.0f));
-			 energyStorage(DeformationMax);
-			 sphereComp->AddForce(FVector::UpVector * jump_force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
-		 }else
-		 if (scale.Z >= DeformationMax)
-		 {
-			 setWorldSpaceScale(FVector(DeformationMax - static_cast<float>(1) / 100.0f));
-			 energyStorage(1.0f);
-			 ToOne = true;
+		 }else{
+			 setWorldSpaceScale(scale);
+			 if (scale.Z <= DeformationMin)
+			 {
+				 setWorldSpaceScale(FVector(DeformationMin + static_cast<float>(1) / 100.0f));
+				 energyStorage(DeformationMax);
+				 sphereComp->AddForce(FVector::UpVector * jump_force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
+			 }
+			 else if (scale.Z >= DeformationMax)
+				 {
+					 setWorldSpaceScale(FVector(DeformationMax - static_cast<float>(1) / 100.0f));
+					 energyStorage(1.0f);
+					 ToOne = true;
+				 }
 		 }
 	}
 	if (GetActorLocation().Z <= DeadDeep)
