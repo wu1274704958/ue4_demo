@@ -121,6 +121,7 @@ void ACollidingPawn::Tick(float DeltaTime)
 			 {
 				 setWorldSpaceScale(FVector(DeformationMin + static_cast<float>(1) / 100.0f));
 				 energyStorage(DeformationMax);
+				 UE_LOG(MyLog,Warning,TEXT("jump scale %f mass %f mass scale %f"),GetActorScaleEX().Z,sphereComp->GetMass(),sphereComp->GetMassScale());
 				 sphereComp->AddForce(FVector::UpVector * jump_force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
 			 }
 			 else if (scale.Z >= DeformationMax)
