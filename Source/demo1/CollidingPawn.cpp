@@ -122,7 +122,7 @@ void ACollidingPawn::Tick(float DeltaTime)
 				 setWorldSpaceScale(FVector(DeformationMin + static_cast<float>(1) / 100.0f));
 				 energyStorage(DeformationMax);
 				 UE_LOG(MyLog,Warning,TEXT("jump scale %f mass %f mass scale %f"),GetActorScaleEX().Z,sphereComp->GetMass(),sphereComp->GetMassScale());
-				 sphereComp->AddForce(FVector::UpVector * jump_force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
+				 sphereComp->AddImpulse(FVector::UpVector * jump_force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
 			 }
 			 else if (scale.Z >= DeformationMax)
 				 {
@@ -165,7 +165,7 @@ void ACollidingPawn::moveForward(float v)
 	}*/
 	if (follow_camera && rayCastFloor())
 	{
-		sphereComp->AddForce(follow_camera->GetActorForwardVector() * v * force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
+		sphereComp->AddImpulse(follow_camera->GetActorForwardVector() * v * force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
 	}
 }
 
@@ -177,7 +177,7 @@ void ACollidingPawn::moveRight(float v)
 	}*/
 	if (follow_camera && rayCastFloor())
 	{
-		sphereComp->AddForce(follow_camera->GetActorRightVector() * v * force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
+		sphereComp->AddImpulse(follow_camera->GetActorRightVector() * v * force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
 	}
 }
 
