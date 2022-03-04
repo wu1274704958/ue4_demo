@@ -13,7 +13,7 @@ ATestDeformableActor::ATestDeformableActor()
 	deformableComp->SetupAttachment(RootComponent);
 	deformableComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Block);
 	deformableComp->SetSimulatePhysics(true);
-	//deformableComp->SetEnableGravity(true);
+	deformableComp->SetEnableGravity(true);
 	SetMesh(FVector(10.0f,10.0f,10.0f));
 }
 
@@ -34,6 +34,28 @@ void ATestDeformableActor::Tick(float DeltaTime)
 void ATestDeformableActor::SetMesh(FVector scale, FQuat quat)
 {
 	deformableComp->ClearAllMeshSections();
-	deformableComp->CreateMeshSection()
+	TArray<FVector> Vertices;
+	Vertices.Add(FVector(0, 0, 0));
+	Vertices.Add(FVector(200, 0, 0));
+	Vertices.Add(FVector(0, 0, 100));
+	TArray<int> Triangles;
+	Triangles.Add(2);
+	Triangles.Add(1);
+	Triangles.Add(0);
+	TArray<FColor> VertexColors;
+	VertexColors.Add(FColor(0.0f, 0.0f, 1.0f));
+	VertexColors.Add(FColor(1.0f, 0.0f, 0.0f));
+	VertexColors.Add(FColor(0.0f, 1.0f, 0.0f));
+	TArray<FVector2D> UV;
+	UV.Add(FVector2D(0.0f, 0.0f));
+	UV.Add(FVector2D(1.0f, 0.0f));
+	UV.Add(FVector2D(0.0f, 1.0f));
+	TArray<FProcMeshTangent> Tangents;
+	Tangents.Init(FProcMeshTangent(1.0f, 0.0f, 0.0f), 3);
+	TArray<FVector> Normals;
+	Normals.Init(FVector(0, 1.0f, 0), 3);
+	deformableComp->CreateMeshSection(0, Vertices, Triangles, Normals,
+		UV,UV,UV,UV,
+		VertexColors, Tangents, true);
 }
 
