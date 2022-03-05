@@ -11,10 +11,11 @@ ATestDeformableActor::ATestDeformableActor()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("root"));
 	deformableComp = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("pmc"));
 	deformableComp->SetupAttachment(RootComponent);
-	deformableComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn,ECollisionResponse::ECR_Block);
+	deformableComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic,ECollisionResponse::ECR_Block);
 	deformableComp->SetSimulatePhysics(true);
 	deformableComp->SetEnableGravity(true);
-	SetMesh(FVector(10.0f,10.0f,10.0f));
+	deformableComp->bUseComplexAsSimpleCollision = false;
+	SetMesh(FVector(100.0f,100.0f,100.0f));
 }
 
 // Called when the game starts or when spawned
@@ -33,6 +34,7 @@ void ATestDeformableActor::Tick(float DeltaTime)
 
 void ATestDeformableActor::SetMesh(FVector scale, FQuat quat)
 {
+	/*
 	deformableComp->ClearAllMeshSections();
 	TArray<FVector> Vertices;
 	Vertices.Add(FVector(0, 0, 0));
@@ -57,5 +59,52 @@ void ATestDeformableActor::SetMesh(FVector scale, FQuat quat)
 	deformableComp->CreateMeshSection(0, Vertices, Triangles, Normals,
 		UV,UV,UV,UV,
 		VertexColors, Tangents, true);
-}
+		*/
+	deformableComp->ClearAllMeshSections();
+	TArray<FVector> Vertices;
+	Vertices.Add(FVector(0, 0, 0.5));
+	Vertices.Add(FVector(0.5, 0.5, 0));
+	Vertices.Add(FVector(0.5, -0.5, 0));
+	
+	Vertices.Add(FVector(-0.5, 0.5, 0));
+	Vertices.Add(FVector(-0.5, -0.5, 0));
+	Vertices.Add(FVector(0, 0, -0.5));
+	for (FVector& Vertex : Vertices)
+	{
+		Vertex *= scale;
+	}
+
+	TArray<int> Triangles;
+	Triangles.Add(0);
+	Triangles.Add(1);
+	Triangles.Add(2);
+
+	Triangles.Add(0);
+	Triangles.Add(4);
+	Triangles.Add(3);
+
+	Triangles.Add(0);
+	Triangles.Add(3);
+	Triangles.Add(1);
+
+	Triangles.Add(0);
+	Triangles.Add(2);
+	Triangles.Add(4);
+
+	Triangles.Add(1);
+	Triangles.Add(3);
+	Triangles.Add(2);
+
+	Triangles.Add(2);
+	Triangles.Add(3);
+	Triangles.Add(4);
+	
+	/*deformableComp->CreateMeshSection(0, Vertices, Triangles, {},
+		{}, {}, {}, {},
+		{}, {}, false);*/
+	deformableComp->ClearCollisionConvexMeshes();
+	TArray<TArray<FVector>> meshs;
+	meshs.Add(Vertices);
+	deformableComp->SetCollisionConvexMeshes(meshs);
+} 
 
