@@ -2,7 +2,7 @@
 
 
 #include "TestDeformableActor.h"
-
+#include "Global.h"
 // Sets default values
 ATestDeformableActor::ATestDeformableActor()
 {
@@ -32,77 +32,38 @@ void ATestDeformableActor::Tick(float DeltaTime)
 
 }
 
+void FillLine(TArray<FVector>& arr,float degress,int segmentCount,float height = 0.0f,float offset = 0.5f,bool dropTail = false)
+{
+	auto seg = 1.0f / segmentCount;
+	auto dir = FQuat(FRotator(0,degress,0)) * FVector(0.0,offset,0.0f);
+	for(int i = 0;i <= segmentCount;++i)
+	{
+		auto rotated = FQuat(FRotator(0, degress, 0)) * FVector(seg * i - 0.5f, 0.0f, height);
+		auto v = rotated + dir;
+		auto size = v.Size();
+		if(size > 0.5f)
+			v = v.GetUnsafeNormal() * 0.5f; 
+		arr.Add(v);
+		if(i == segmentCount - 1 && dropTail)
+			break;
+	}
+}
+
 void ATestDeformableActor::SetMesh(FVector scale, FQuat quat)
 {
-	/*
-	deformableComp->ClearAllMeshSections();
+	deformableComp->ClearCollisionConvexMeshes();
 	TArray<FVector> Vertices;
-	Vertices.Add(FVector(0, 0, 0));
-	Vertices.Add(FVector(200, 0, 0));
-	Vertices.Add(FVector(0, 0, 100));
-	TArray<int> Triangles;
-	Triangles.Add(2);
-	Triangles.Add(1);
-	Triangles.Add(0);
-	TArray<FColor> VertexColors;
-	VertexColors.Add(FColor(0.0f, 0.0f, 1.0f));
-	VertexColors.Add(FColor(1.0f, 0.0f, 0.0f));
-	VertexColors.Add(FColor(0.0f, 1.0f, 0.0f));
-	TArray<FVector2D> UV;
-	UV.Add(FVector2D(0.0f, 0.0f));
-	UV.Add(FVector2D(1.0f, 0.0f));
-	UV.Add(FVector2D(0.0f, 1.0f));
-	TArray<FProcMeshTangent> Tangents;
-	Tangents.Init(FProcMeshTangent(1.0f, 0.0f, 0.0f), 3);
-	TArray<FVector> Normals;
-	Normals.Init(FVector(0, 1.0f, 0), 3);
-	deformableComp->CreateMeshSection(0, Vertices, Triangles, Normals,
-		UV,UV,UV,UV,
-		VertexColors, Tangents, true);
-		*/
-	deformableComp->ClearAllMeshSections();
-	TArray<FVector> Vertices;
-	Vertices.Add(FVector(0, 0, 0.5));
-	Vertices.Add(FVector(0.5, 0.5, 0));
-	Vertices.Add(FVector(0.5, -0.5, 0));
-	
-	Vertices.Add(FVector(-0.5, 0.5, 0));
-	Vertices.Add(FVector(-0.5, -0.5, 0));
-	Vertices.Add(FVector(0, 0, -0.5));
+	Vertices.Add(FVector(0.0f,0.0f,0.5f));
+	FillLine(Vertices,		0,		5,	0.0f);
+	FillLine(Vertices,		90, 	5,	0.0f);
+	FillLine(Vertices, 		180, 	5,	0.0f);
+	FillLine(Vertices, 		270, 	5,	0.0f);
+	Vertices.Add(FVector(0.0f,0.0f,-0.5f));
 	for (FVector& Vertex : Vertices)
 	{
+		UE_LOG(MyLog, Warning, TEXT("%f %f %f"), Vertex.X,Vertex.Y,Vertex.Z);
 		Vertex *= scale;
 	}
-
-	TArray<int> Triangles;
-	Triangles.Add(0);
-	Triangles.Add(1);
-	Triangles.Add(2);
-
-	Triangles.Add(0);
-	Triangles.Add(4);
-	Triangles.Add(3);
-
-	Triangles.Add(0);
-	Triangles.Add(3);
-	Triangles.Add(1);
-
-	Triangles.Add(0);
-	Triangles.Add(2);
-	Triangles.Add(4);
-
-	Triangles.Add(1);
-	Triangles.Add(3);
-	Triangles.Add(2);
-
-	Triangles.Add(2);
-	Triangles.Add(3);
-	Triangles.Add(4);
-	
-	/*deformableComp->CreateMeshSection(0, Vertices, Triangles, {},
-		{}, {}, {}, {},
-		{}, {}, false);*/
-	deformableComp->ClearCollisionConvexMeshes();
 	TArray<TArray<FVector>> meshs;
 	meshs.Add(Vertices);
 	deformableComp->SetCollisionConvexMeshes(meshs);
