@@ -8,7 +8,7 @@
 #include "TestDeformableActor.generated.h"
 
 UCLASS()
-class DEMO1_API ATestDeformableActor : public AActor
+class DEMO1_API ATestDeformableActor : public APawn
 {
 	GENERATED_BODY()
 	
@@ -20,10 +20,15 @@ protected:
 	virtual void BeginPlay() override;
 	UPROPERTY(EditAnywhere)
 	UProceduralMeshComponent* deformableComp;
+	TArray<FVector> ConvexMesh;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void SetMesh(FVector scale = FVector::OneVector,FQuat quat = FQuat::Identity);
+	void GenCubeSphere(int segmentCount);
 
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	void TestDeform();
+	void moveForward(float v);
 };
