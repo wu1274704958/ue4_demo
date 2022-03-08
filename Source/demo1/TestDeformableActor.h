@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ProceduralMeshComponent/Public/ProceduralMeshComponent.h"
+#include "UDeformableSphereComp.h"
 #include "TestDeformableActor.generated.h"
 
 UCLASS()
@@ -19,14 +19,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	UPROPERTY(EditAnywhere)
-	UProceduralMeshComponent* deformableComp;
+	UUDeformableSphereComp* deformableComp;
 	TArray<FVector> ConvexMesh;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void SetMesh(FVector scale = FVector::OneVector,FQuat quat = FQuat::Identity);
-	void GenCubeSphere(int segmentCount);
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	void TestDeform();
