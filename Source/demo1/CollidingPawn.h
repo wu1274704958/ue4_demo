@@ -5,12 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "CollidingPawnMovement.h"
-#include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include <Camera/CameraActor.h>
-#include "Components/SphereComponent.h"
-#include "Components/CapsuleComponent.h"
 #include <tuple>
+#include "UDeformableSphereComp.h"
 #include "CollidingPawn.generated.h"
 
 
@@ -39,7 +37,7 @@ public:
 	int DeformationUnit = 1;
 	int DeformationVal = 0;
 	UPROPERTY(EditAnywhere)
-	UCapsuleComponent* sphereComp;
+	UUDeformableSphereComp* sphereComp;
 	UPROPERTY(EditAnywhere)
 	AActor* BorthPoint;
 	UPROPERTY(EditAnywhere)
@@ -49,6 +47,9 @@ public:
 	float cameraPitchOff = 0.0f;
 	UPROPERTY(EditAnywhere)
 	USpringArmComponent* springArm;
+	UPROPERTY(EditAnywhere)
+	float SphereSize = 100.0f;
+
 	
 protected:
 	// Called when the game starts or when spawned
@@ -82,4 +83,9 @@ public:
 	FVector GetActorScaleEX();
 	float GetCameraPitch();
 	std::tuple<float,FVector> CalcDegress(FVector a, FVector b);
+
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
 };

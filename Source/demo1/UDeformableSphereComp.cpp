@@ -3,14 +3,12 @@
 
 #include "UDeformableSphereComp.h"
 
-#include "TestDeformableActor.h"
-
 // Sets default values for this component's properties
-UUDeformableSphereComp::UUDeformableSphereComp(const FObjectInitializer& ObjectInitializer) : UProceduralMeshComponent(ObjectInitializer)
+UUDeformableSphereComp::UUDeformableSphereComp(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	//PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 }
@@ -83,8 +81,6 @@ void UUDeformableSphereComp::GenCubeSphere(int segmentCount)
 
 void UUDeformableSphereComp::SetMesh(FVector scale, FQuat quat)
 {
-	auto e = quat.Euler();
-	ClearCollisionConvexMeshes();
 	TArray<FVector> Vertices;
 	if (ConvexMesh.Num() == 0)
 		GenCubeSphere(6);
@@ -92,5 +88,7 @@ void UUDeformableSphereComp::SetMesh(FVector scale, FQuat quat)
 	{
 		Vertices.Add(quat.UnrotateVector(v * scale));
 	}
-	AddCollisionConvexMesh(Vertices);
+	TArray<TArray<FVector>> Meshs;
+	Meshs.Add(Vertices);
+	SetCollisionConvexMeshes(Meshs);
 }

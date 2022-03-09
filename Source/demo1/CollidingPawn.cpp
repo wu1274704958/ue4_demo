@@ -19,16 +19,17 @@ ACollidingPawn::ACollidingPawn()
 	//RootComponent = root;
 	
 
-	sphereComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("RootComponent"));
+	sphereComp = CreateDefaultSubobject<UUDeformableSphereComp>(TEXT("RootComponent"));
 	RootComponent = sphereComp;
 	//sphereComp->SetupAttachment(RootComponent);
 	sphereComp->SetRelativeLocation(FVector::ZeroVector);
 	sphereComp->SetRelativeScale3D(FVector::OneVector);
 	sphereComp->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0.0f,0.0f,0.0f)));
-	sphereComp->InitCapsuleSize(50.0f,50.0f);
-	sphereComp->SetCollisionProfileName(TEXT("Pawn"));
+	sphereComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 	sphereComp->SetSimulatePhysics(true);
 	sphereComp->SetEnableGravity(true);
+	sphereComp->bUseComplexAsSimpleCollision = false;
+	sphereComp->SetMesh(FVector::OneVector * SphereSize);
 
 	auto meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	meshComp->SetupAttachment(sphereComp);
@@ -235,7 +236,11 @@ void ACollidingPawn::setWorldSpaceScale(FVector scale)
 	//sphereComp->SetRelativeScale3D(scale);
 	//SetActorScale3D(scale);
 	scale_phy = scale.X;
-	sphereComp->SetCapsuleSize(scale_phy * 50.0f, 50.0f);
+	auto angularVel = sphereComp->GetPhysicsAngularVelocity();
+	auto velocity = sphereComp->GetPhysicsLinearVelocity();
+	sphereComp->SetMesh(FVector(SphereSize,SphereSize,SphereSize * scale_phy),sphereComp->GetComponentQuat());
+	sphereComp->SetPhysicsAngularVelocity(angularVel);
+	sphereComp->SetPhysicsLinearVelocity(velocity);
 	//auto meshScale = FVector(0.8f, 0.8f, 0.8f) / scale;
 	//meshComp->SetRelativeScale3D(meshScale);
 
@@ -289,3 +294,17 @@ std::tuple<float,FVector> ACollidingPawn::CalcDegress(FVector a, FVector b)
 	
 	return std::make_tuple(FMath::RadiansToDegrees(rad),rot_axis);
 }
+
+#if WITH_EDITOR
+void ACollidingPawn::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	/*FName PropertyName = PropertyChangedEvent.Property != nullptr ? PropertyChangedEvent.Property->GetFName() : NAME_None;
+	if(PropertyName == GET_MEMBER_NAME_CHECKED(ACollidingPawn, SphereSize))
+	{
+		UE_LOG(MyLog,Warning,TEXT("change SphereSize %f"),SphereSize);
+		sphereComp->SetMesh(FVector::OneVector * SphereSize);
+	}*/
+}
+
+#endif
