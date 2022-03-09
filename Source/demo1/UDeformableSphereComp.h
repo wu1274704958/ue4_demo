@@ -15,7 +15,7 @@ class DEMO1_API UUDeformableSphereComp : public UProceduralMeshComponent
 
 public:	
 	// Sets default values for this component's properties
-	UUDeformableSphereComp();
+	UUDeformableSphereComp(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	// Called when the game starts
