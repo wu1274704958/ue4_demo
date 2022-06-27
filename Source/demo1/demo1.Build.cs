@@ -12,7 +12,7 @@ public class demo1 : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
-		CppStandard = CppStandardVersion.Cpp17;
+		CppStandard = CppStandardVersion.Cpp20;
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

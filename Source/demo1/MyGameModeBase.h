@@ -12,6 +12,9 @@
 UCLASS()
 class DEMO1_API AMyGameModeBase : public AGameModeBase
 {
+	public:
+	AMyGameModeBase();
+	private:
 	GENERATED_BODY()
 	void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 };

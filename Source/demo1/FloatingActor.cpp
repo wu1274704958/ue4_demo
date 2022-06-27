@@ -40,7 +40,7 @@ void AFloatingActor::OnChangeMaterial()
 	if (materoalPath.Get() == nullptr)
 	{
 		FStreamableManager& mgr = Global::Ins()->GetStreamableManager();
-		mgr.RequestAsyncLoad(this->materoalPath.ToStringReference(), FStreamableDelegate::CreateUObject(this, &AFloatingActor::GrantItemsDeferred));
+		mgr.RequestAsyncLoad(this->materoalPath.ToSoftObjectPath(), FStreamableDelegate::CreateUObject(this, &AFloatingActor::GrantItemsDeferred));
 	}
 	else {
 		GrantItemsDeferred();
@@ -67,7 +67,7 @@ void AFloatingActor::PostEditChangeProperty(FPropertyChangedEvent & PropertyChan
     auto propertyName = PropertyChangedEvent.GetPropertyName();
 	if (propertyName == FName(TEXT("materoalPath")))
 	{
-		auto name = this->materoalPath.ToStringReference().GetAssetPathString();
+		auto name = this->materoalPath.ToSoftObjectPath().GetAssetPathString();
 		UE_LOG(MyLog, Warning, TEXT("PostEditChangeProperty %s"), *name);
 		OnChangeMaterial();
 	}

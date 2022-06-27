@@ -11,3 +11,9 @@ void AMyGameModeBase::InitGame(const FString & MapName, const FString & Options,
 	UE_LOG(YourLog, Warning, TEXT("=-= InitGame"));
 	UE_LOG(YourLog, Warning, TEXT("=-= MapName=%s Options=%s Error=%s"), *MapName, *Options, *ErrorMessage);
 }
+
+AMyGameModeBase::AMyGameModeBase()
+{
+	DefaultPawnClass = nullptr;
+	SpectatorClass = nullptr;
+}

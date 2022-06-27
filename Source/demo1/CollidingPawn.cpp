@@ -20,6 +20,7 @@ ACollidingPawn::ACollidingPawn()
 	
 
 	sphereComp = CreateDefaultSubobject<UUDeformableSphereComp>(TEXT("RootComponent"));
+	UE_LOG(MyLog,Warning,TEXT("1 sphereComp == null = %d"),sphereComp == nullptr);
 	RootComponent = sphereComp;
 	//sphereComp->SetupAttachment(RootComponent);
 	sphereComp->SetRelativeLocation(FVector::ZeroVector);
@@ -30,6 +31,9 @@ ACollidingPawn::ACollidingPawn()
 	sphereComp->SetEnableGravity(true);
 	sphereComp->bUseComplexAsSimpleCollision = false;
 	sphereComp->SetMesh(FVector::OneVector * SphereSize);
+	sphereComp->bUseAsyncCooking = false;
+
+	UE_LOG(MyLog, Warning, TEXT("2 sphereComp == null = %d"), sphereComp == nullptr);
 
 	auto meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	meshComp->SetupAttachment(sphereComp);
@@ -44,7 +48,7 @@ ACollidingPawn::ACollidingPawn()
 		meshComp->SetSimulatePhysics(false);
 		meshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
-
+	UE_LOG(MyLog, Warning, TEXT("3 sphereComp == null = %d"), sphereComp == nullptr);
 	springArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
 	springArm->SetupAttachment(sphereComp);
 	springArm->SetRelativeRotation(FRotator(0.f,0.f,0.f));
@@ -56,6 +60,8 @@ ACollidingPawn::ACollidingPawn()
 
 	pawnMovement = CreateDefaultSubobject< UCollidingPawnMovement>(TEXT("Movement"));
 	pawnMovement->UpdatedComponent = RootComponent;
+
+	UE_LOG(MyLog, Warning, TEXT("4 sphereComp == null = %d"), sphereComp == nullptr);
 	
 }
 
@@ -110,7 +116,7 @@ void ACollidingPawn::Tick(float DeltaTime)
 		 float offset = static_cast<float>( DeformationVal) / 100.0f;
 		 auto scale = GetActorScaleEX();
 		 scale += FVector(offset) * DeltaTime;
-		 //UE_LOG(MyLog,Warning,TEXT("ToOne %d,abs(1.0f - scale.X) = %f %f"),ToOne, abs(1.0f - scale.X),scale.X);
+		 UE_LOG(MyLog,Warning,TEXT("ToOne %d,abs(1.0f - scale.X) = %f %f"),ToOne, static_cast<float>(abs(1.0f - scale.X)),static_cast<float>(scale.X));
 		 if (ToOne && abs(1.0f - scale.X) <= 0.01f)
 		 {
 			 ToOne = false;
@@ -122,7 +128,7 @@ void ACollidingPawn::Tick(float DeltaTime)
 			 {
 				 setWorldSpaceScale(FVector(DeformationMin + static_cast<float>(1) / 100.0f));
 				 energyStorage(DeformationMax);
-				 UE_LOG(MyLog,Warning,TEXT("jump scale %f mass %f mass scale %f"),GetActorScaleEX().Z,sphereComp->GetMass(),sphereComp->GetMassScale());
+				 UE_LOG(MyLog,Warning,TEXT("jump scale %f mass %f mass scale %f"), static_cast<float>(GetActorScaleEX().Z),sphereComp->GetMass(),sphereComp->GetMassScale());
 				 sphereComp->AddImpulse(FVector::UpVector * jump_force_scale * sphereComp->GetMass() * sphereComp->GetMassScale());
 			 }
 			 else if (scale.Z >= DeformationMax)
@@ -236,10 +242,10 @@ void ACollidingPawn::setWorldSpaceScale(FVector scale)
 	//sphereComp->SetRelativeScale3D(scale);
 	//SetActorScale3D(scale);
 	scale_phy = scale.X;
-	auto angularVel = sphereComp->GetPhysicsAngularVelocity();
+	auto angularVel = sphereComp->GetPhysicsAngularVelocityInRadians();
 	auto velocity = sphereComp->GetPhysicsLinearVelocity();
 	sphereComp->SetMesh(FVector(SphereSize,SphereSize,SphereSize * scale_phy),sphereComp->GetComponentQuat());
-	sphereComp->SetPhysicsAngularVelocity(angularVel);
+	sphereComp->SetPhysicsAngularVelocityInRadians(angularVel);
 	sphereComp->SetPhysicsLinearVelocity(velocity);
 	//auto meshScale = FVector(0.8f, 0.8f, 0.8f) / scale;
 	//meshComp->SetRelativeScale3D(meshScale);
